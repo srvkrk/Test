@@ -1,0 +1,29 @@
+C:\Siemens\infodba14\tccs\bin>set FMS_HOME=C:\Siemens\infodba14\tccs
+ 
+C:\Siemens\infodba14\tccs\bin>fccstat -status
+fccstat -status:  FCC Offline.
+ 
+C:\Siemens\infodba14\tccs\bin>set JAVA_HOME=C:\Siemens\Zulu_Java
+ 
+C:\Siemens\infodba14\tccs\bin>set JRE_HOME=C:\Siemens\Zulu_Java
+ 
+C:\Siemens\infodba14\tccs\bin>set JRE64_HOME=C:\Siemens\Zulu_Java
+ 
+C:\Siemens\infodba14\tccs\bin>fccstat -start
+fccstat -start:
+FCC Started.
+ 
+C:\Siemens\infodba14\tccs\bin>cd..
+ 
+C:\Siemens\infodba14\tccs>cd..
+ 
+C:\Siemens\infodba14>cd portal
+ 
+C:\Siemens\infodba14\portal>portal.bat
+fccstat -start:
+FMSClientCache/14.3(20240308)
+FMSUtil/14.3(20240308)
+TcCommService/14.3(20240308)
+TcProxyClient/14.3(20240308)
+FCC has been online for 10 seconds.
+Starting Teamcenter Rich Client...

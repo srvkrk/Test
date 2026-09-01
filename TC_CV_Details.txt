@@ -1,0 +1,81 @@
+Skills:
+
+Core Teamcenter Expertise
+
+•Extensive experience in Siemens Teamcenter architecture, solution design, and enterprise-scale implementations
+•Proficient with core Teamcenter tools: BMIDE, Workflow Designer, Structure Manager, Query Builder, Report Builder, Classifications, and Product Configurator
+•Knowledge of Active Workspace (AWC) customization, extension, and UI configuration
+•Familiar with the Mendix low-code platform
+
+Customization & Development
+
+•Develop and customize Teamcenter functionalities using ITK (Integration Toolkit), RAC (Rich Client), SOA (Service-Oriented Architecture), and advanced server-side customizations
+•Hands-on experience with Handler, Exit, and custom workflow development
+•Design, configure, and maintain the Teamcenter BMIDE (Business Modeling Independent Development Environment), including data modeling, object definitions, rules, and extensions
+•Designed and implemented scalable SOAP and REST APIs for seamless communication between Teamcenter and external systems
+•Experience in Active Workspace (AWC) customization and UI configuration
+•Knowledge of integrating the Mendix low-code platform with Teamcenter Active Workspace (AWC)
+
+Programming & Technologies
+
+•Proficient in C, C++, and Java for Teamcenter customization and backend development
+•Experience with JavaScript, HTML5, Bootstrap, jQuery, and CSS3 for Active Workspace (AWC) customization
+•Skilled in HTML5, CSS3, XML, XSLT, and JSON for data transformation, UI, and configuration
+•Experience with scripting languages (Python, Shell, and Batch) for automation and deployment
+•Strong knowledge of database technologies, including Oracle and MySQL
+•Experience in developing and consuming SOAP and REST web services for system integration (tools used: Postman, SoapUI, Boomerang)
+•Experienced with version control systems such as Git
+
+Integration & Enterprise Systems
+
+•Designed and implemented automated data transfer from Teamcenter to SAP S/4HANA using cURL and JSON, ensuring accurate, real-time synchronization between PLM and ERP systems
+•Integrated the Mendix low-code platform with Teamcenter Active Workspace (AWC) using REST/SOA services to enable seamless data exchange
+•Integrated TCUA with CATIA V6 (Dassault Systems) to transfer metadata, ensuring accurate BOM, lifecycle, and version synchronization across PLM systems
+
+Deployment, Architecture & DevOps
+
+•Hands-on experience in Teamcenter installation and setup of development environments
+•Executed BMIDE deployments for development environments, including data model updates and configuration management tasks
+•Configured and optimized application servers (Tomcat) for development environments
+•Configured Valgrind in SUSE Linux development environment to perform memory management analysis and debugging for Teamcenter ITK code
+•Familiar with CI/CD pipelines and version control using Git for source code management and collaborative development
+
+__________________________________________________________________________________________________________________________________________
+
+Professional Experience:
+
+Project: TCE to TCUA Data Migration
+
+• Identified the scope of migration, including data types (items, BOMs, CAD files, datasets, change objects), site-specific data, and users
+• Analyzed existing TCE data models, identified gaps, and mapped them to TCUA Business Modeler IDE (BMIDE) models for accurate migration
+• Developed and executed automated scripts (Shell) and tools (ITK Utility) to transfer metadata, BOMs, CAD files, and lifecycle information from TCE to TCUA
+• Implemented post-migration verification processes using the TCE-to-TCUA data validation program (ITK Utility) to ensure consistency, completeness, and compliance with enterprise PLM standards
+• Collaborated with cross-functional teams to troubleshoot migration issues and resolve data conflicts
+• Documented migration methodology, best practices, and lessons learned for future PLM upgrades
+
+Project: TCUA to SAP S/4HANA Data Transfer using cURL, CJSON, and REST Services
+
+• Designed and implemented automated data transfer from Teamcenter Unified Architecture (TCUA) to SAP S/4HANA using cURL, CJSON, and REST services, ensuring accurate and real-time synchronization
+• Developed scripts and integration workflows to transfer metadata, BOMs, and lifecycle information between TCUA and SAP S/4HANA via REST APIs
+• Ensured data consistency and integrity during transfers by validating payloads and handling exceptions in integration scripts and REST calls
+• Collaborated with SAP and Teamcenter teams to define API endpoints, mapping rules, and error-handling strategies for seamless PLM–ERP communication
+• Optimized REST and cURL-based data transfer processes to reduce latency and improve performance across large datasets
+• Documented integration methodology, scripts, REST endpoints, and best practices to support future PLM–ERP data exchange projects
+
+Project: Dashboarding Teamcenter Modularity Data in Active Workspace (AWC)
+
+• Designed and implemented interactive dashboards in Active Workspace (AWC) to visualize Teamcenter modularity data for engineering and management teams
+• Developed custom reports in AWC and UI components using JavaScript, HTML5, Bootstrap, and CSS3 to display modularity metrics and lifecycle information
+• Integrated Teamcenter REST APIs and SOA services to fetch real-time modularity data for dashboard visualization
+• Configured filters, drill-downs, and reports to enable actionable insights on dashboards
+• Collaborated with cross-functional teams to align dashboard metrics with business requirements and PLM processes
+• Documented dashboard design, integration approach, and usage guidelines to support user adoption and future enhancements
+
+__________________________________________________________________________________________________________________________________________
+
+Project: TCE Customization and Support
+• Developed and customized Teamcenter Engineering (TCE) functionalities using MET (Metaphase) and MTH coding to meet business-specific requirements
+• Implemented enhancements to existing workflows, BOM management, Check-in, Check-out and data handling processes within TCE
+• Developed and maintained different utilities for data processing, validation, and bulk operations
+• Provided L2 and L3 support for Teamcenter Engineering (TCE), including incident resolution, root cause analysis, and implementation of permanent fixes to ensure system stability and performance
+• Documented customization logic, support procedures, and technical solutions for future reference

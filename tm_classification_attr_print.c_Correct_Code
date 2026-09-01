@@ -1,0 +1,429 @@
+/***************************************************************************
+* Copyright (c) 2007 Tata Technologies Limited (TTL). All Rights Reserved.
+*
+* This software is the confidential and proprietary information of TTL.
+* You shall not disclose such confidential information and shall use it
+* only in accordance with the terms of the license agreement.
+*
+*  Author       :   Sourav Karak
+*  Module       :   WSOM
+*  Description  :   Part Classification Attribute Data Print
+*  File Name    :   tm_classification_attr_print.c
+*  Created on   :   Jan 7th 2026
+*
+* Modification History :
+* S.No       Date         CR No      Modified By      Modification Notes
+*  1.     07/01/2026                 Sourav Karak
+***************************************************************************/
+
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <tccore/custom.h>
+#include <ict/ict_userservice.h>
+#include <tc/preferences.h>
+#include <lov/lov_msg.h>
+#include <ss/ss_errors.h>
+#include <sa/user.h>
+#include <tccore/tc_msg.h>
+#include <ae/dataset_msg.h>
+#include <tc/emh.h>
+#include <ecm/ecm.h>
+#include <fclasses/tc_string.h>
+#include <tccore/item_errors.h>
+#include <sa/tcfile.h>
+#include <tcinit/tcinit.h>
+#include <tccore/tctype.h>
+#include <time.h>
+#include <ae/ae.h>                  
+#include <setjmp.h>
+#include <ae/ae_errors.h>           
+#include <ae/ae_types.h>           
+#include <unidefs.h>
+#include <user_exits/user_exit_msg.h>
+#include <pom/enq/enq.h>
+#include <ug_va_copy.h>
+#include <tie/tie_errors.h>
+#include <tccore/grm.h>
+#include <tccore/grmtype.h>
+#include <tc/tc_startup.h>
+#include <user_exits/user_exits.h>
+#include <tccore/method.h>
+#include <property/prop.h>
+#include <property/prop_msg.h>
+#include <property/prop_errors.h>
+#include <tccore/item.h>
+#include <lov/lov.h>
+#include <sa/sa.h>
+#include <sa/site.h>
+#include <res/res_itk.h>
+#include <res/reservation.h>
+#include <tccore/workspaceobject.h>
+#include <tc/wsouif_errors.h>
+#include <tccore/aom.h>
+#include <publication/dist_user_exits.h>
+#include <form/form.h>
+#include <epm/epm.h>
+#include <epm/epm_task_template_itk.h>
+#include <constants/constants.h>
+#include <sa/groupmember.h>
+#include <bom/bom.h>
+#include <cfm/cfm.h>
+#include <pie/pie.h>
+#include <bom/bom_attr.h>
+#include <bom/bom_tokens.h>
+#include <tc/envelope.h>
+#include <ctype.h>
+#include <epm/cr.h>
+#include <tc/folder.h>
+#include <pom/pom/pom.h>
+#include <ps/ps.h>
+#include <pie/pie.h> 
+#include <tccore/uom.h>
+#include <rdv/arch.h>
+#include <textsrv/textserver.h>
+#include <ae/dataset.h>
+#include <assert.h>
+#include <stdio.h>
+#include <tccore/item_msg.h>
+#include <tccore/aom_prop.h>
+#include <ics/ics2.h>
+#include <ics/ics.h>
+#include <tccore/grm_msg.h>
+#define CALLAPI(expr)ITKCALL(ifail = expr); if(ifail != ITK_ok) {  return ifail;}
+#define ITK_errStore 91900002
+#define MAX_LINE_LENGTH 1000
+#define Debug TRUE
+int status =0;
+#define ITK_CALL(X) 							\
+		if(Debug)								\
+		{										\
+			printf(#X);							\
+		}										\
+		fflush(NULL);							\
+		status=X; 								\
+		if (status != ITK_ok ) 					\
+		{										\
+			int				index = 0;			\
+			int				n_ifails = 0;		\
+			const int*		severities = 0;		\
+			const int*		ifails = 0;			\
+			const char**	texts = NULL;		\
+												\
+			EMH_ask_errors( &n_ifails, &severities, &ifails, &texts);		\
+			printf("\t%3d error(s)\n", n_ifails);							\
+			for( index=0; index<n_ifails; index++)							\
+			{																\
+				printf("\tError #%d, %s\n", ifails[index], texts[index]);	\
+			}																\
+			/*return status;*/													\
+		}																	\
+		else									\
+		{										\
+			if(Debug)							\
+			printf("\tSUCCESS\n");				\
+		}										\
+
+
+char *trimwhitespace(char *str)
+{
+  char *end;
+
+  // Trim leading space
+  while(isspace((unsigned char)*str)) str++;
+
+  if(*str == 0) 
+    return str;
+
+  // Trim trailing space
+  end = str + strlen(str) - 1;
+  while(end > str && isspace((unsigned char)*end)) end--;
+
+  // Write new null terminator character
+  end[1] = '\0';
+
+  return str;
+}
+
+char* subString (char* mainStringf ,int fromCharf,int toCharf)
+{
+	int i;
+	//char *retStringf;
+	//retStringf = (char*) malloc(200);
+	char *retStringf = (char *)MEM_alloc(100 * sizeof(char));
+	
+	for(i=0; i < toCharf; i++ )
+              *(retStringf+i) = *(mainStringf+i+fromCharf);
+	*(retStringf+i) = '\0';
+	return retStringf;
+}
+
+void tostring(char str[], int num)
+{
+    int i, rem, len = 0, n;
+ 
+    n = num;
+    while (n != 0)
+    {
+        len++;
+        n /= 10;
+    }
+    for (i = 0; i < len; i++)
+    {
+        rem = num % 10;
+        num = num / 10;
+        str[len - (i + 1)] = rem + '0';
+    }
+    str[len] = '\0';
+}
+
+int ITK_user_main(int argc,char* argv[]) 
+{
+	char *message;
+	char *loggedInUser = NULL;
+	char* partno = NULL;
+	char* rev = NULL;
+	char* seq = NULL;
+	char *item_revseq = (char *) malloc(20*sizeof(char));
+	tag_t tItemobj = NULLTAG;
+	int n_entries = 2;
+	int n_itemobj_found = 0;
+	tag_t* titemobj_results = NULLTAG;
+	int s = 0;
+	tag_t VCRev_tag = NULLTAG;
+	int z = 0;
+	int ChldCount = 0;
+    tag_t *PartChildTags = NULLTAG;
+	tag_t Veh_tag = NULLTAG;
+	char *vehno_str = NULL;
+	char *vehno_strDup = NULL;
+	tag_t vehtItemobj = NULLTAG;
+	int vehn_entries = 2;
+	int vehn_itemobj_found = 0;
+	tag_t* vehtitemobj_results = NULLTAG;
+	int y = 0;
+	tag_t Rev_tag = NULLTAG;
+	tag_t VehRev_tag = NULLTAG;
+	int num_to_sort = 1;
+	int sort_order[1] = {2}; //1 --> Ascending Order & 2 --> Descending Order
+	char *keysAttr[1] =  {"creation_date"};
+	char *partClrInd = NULL;
+	tag_t* NonColPartTags =  NULLTAG;
+	int Count = 0;
+	int iFail = ITK_ok;
+	tag_t VehMstrTag = NULLTAG;
+	int cnt	= 0;
+	tag_t* ClsObjTag_results = NULLTAG;
+	tag_t IcsClsTag = NULLTAG;
+    
+    printf("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");fflush(stdout);	
+	ITK_CALL(ITK_initialize_text_services( ITK_BATCH_TEXT_MODE ));
+	ITK_CALL(ITK_set_journalling( TRUE ));
+    status = ITK_auto_login ();	
+    if (status != ITK_ok ) 
+	{
+        EMH_ask_error_text(status, &message);
+        printf(" Error with ITK_auto_login: \"%d\", \"%s\"\n", status, message);
+        MEM_free(message);
+        return status;
+    }
+	else
+	{
+		printf(" Auto Login Successfull\n");fflush(stdout);
+		POM_get_user_id(&loggedInUser);
+		printf(" Logged in User: [%s]\n",loggedInUser);fflush(stdout);
+	}
+	
+	partno = ITK_ask_cli_argument("-i=");
+	rev = ITK_ask_cli_argument("-j=");
+	seq = ITK_ask_cli_argument("-k=");
+	trimwhitespace(partno);
+	trimwhitespace(rev);
+	trimwhitespace(seq);
+	printf(" [1]: Input Part No(partno): [%s]\n",partno);
+	printf(" [2]: Input Revision(rev): [%s]\n",rev);
+	printf(" [3]: Input Sequence(seq): [%s]\n",seq);
+	tc_strcpy(item_revseq,rev);
+	tc_strcat(item_revseq,"*");
+	tc_strcat(item_revseq,seq);
+	printf(" Final: Part_Rev_Seq Value(item_revseq): [%s]\n",item_revseq);
+	
+	printf("\n Finding Query[Item Revision...]..!!\n");fflush(stdout);
+    ITK_CALL(QRY_find2("Item Revision...",&tItemobj));
+    if(tItemobj != NULLTAG)
+	{
+		printf("\n Query [Item Revision...] Found Successfully..!!\n");fflush(stdout);
+		char *cEntries[2]  = {"Revision","Item ID"};
+		char *cValues[2]  = {item_revseq,partno};
+		//char *cValues[2]  = {"A*2","51780353000R"};
+		ITK_CALL(QRY_execute(tItemobj, n_entries, cEntries, cValues, &n_itemobj_found, &titemobj_results));
+		printf("\n -----------------------------------------------\n");fflush(stdout);
+		printf("\n  No of Revision Found: [%d]\n",n_itemobj_found);fflush(stdout);
+		printf("\n -----------------------------------------------\n");fflush(stdout);
+		if(n_itemobj_found > 0)
+		{
+			printf(" Queried [Item Revision...] Found..!!\n");fflush(stdout);
+			for(s = 0; s < n_itemobj_found; s++)
+			{
+				VCRev_tag = titemobj_results[s];
+				ITK_CALL(AOM_ask_value_tags(VCRev_tag,"ps_children",&ChldCount,&PartChildTags));
+				if(ChldCount>0)
+				{
+					for(z = 0; z < ChldCount; z++)
+			        {
+						Veh_tag = PartChildTags[z];
+						ITK_CALL(AOM_ask_value_string(PartChildTags[z],"item_id",&vehno_str));
+						if(tc_strlen(vehno_str)>0)
+						{
+							tc_strdup(vehno_str,&vehno_strDup);
+							ITK_CALL(QRY_find2("Item Revision...",&vehtItemobj));
+							if(vehtItemobj != NULLTAG)
+							{
+								printf("\n Query [Item Revision...] Found Successfully..!!\n");fflush(stdout);
+								char *vehEntries[2]  = {"Item ID","Release Status"};
+								char *vehValues[2]  = {vehno_strDup,"T5_LcsErcRlzd"};
+								ITK_CALL(QRY_execute(vehtItemobj, vehn_entries, vehEntries, vehValues, &vehn_itemobj_found, &vehtitemobj_results));
+					            ITK_CALL(QRY_execute_with_sort(vehtItemobj, vehn_entries, vehEntries, vehValues, num_to_sort, keysAttr, sort_order, &vehn_itemobj_found, &vehtitemobj_results));
+								printf("\n -----------------------------------------------\n");fflush(stdout);
+								printf("\n No of Revision Found: [%d]\n",vehn_itemobj_found);fflush(stdout);
+								printf("\n -----------------------------------------------\n");fflush(stdout);
+								if(vehn_itemobj_found > 0)
+								{
+									printf("\n Query [Item Revision...] Found..!!\n");fflush(stdout);
+									for (y = 0; y < vehn_itemobj_found; y++)
+									{
+										Rev_tag = vehtitemobj_results[y];
+										ITK_CALL(AOM_ask_value_string(Rev_tag,"t5_ColourInd",&partClrInd));
+										printf("\n Colour Indicator: [%s]",partClrInd);fflush(stdout);
+										if(tc_strcmp(partClrInd,"C") == 0)
+										{
+											ITK_CALL(AOM_ask_value_tags(Rev_tag,"TC_Is_Represented_By",&Count,&NonColPartTags));
+											if (Count > 0)
+											{
+										       VehRev_tag = NonColPartTags[0];
+											}
+										}
+										else
+										{
+											VehRev_tag = vehtitemobj_results[y];
+										}
+									}
+									
+									tag_t VehMstrTag = NULLTAG;
+									int theAttributeCount = 0;
+									int *theAttributeIds = 0;
+									char **theAttributeNames;
+									int *theAttributeValCounts = 0;
+									char***       theAttributeValues;
+									char***       theAttributeOptimizedUnits;
+									char* 	attrId 					= NULL;
+									attrId = (char *) MEM_alloc( 50 * sizeof(char) );
+									char *prodattributeValueDup 	= NULL;
+									prodattributeValueDup = (char *) MEM_alloc( 5000 * sizeof(char) );
+									char *platattributeValueDup 	= NULL;
+									platattributeValueDup = (char *) MEM_alloc( 5000 * sizeof(char) );
+									char *segattributeValueDup = NULL;
+									segattributeValueDup = (char *) MEM_alloc( 5000 * sizeof(char) );
+									char *varattributeValueDup 	= NULL;
+									varattributeValueDup = (char *) MEM_alloc( 5000 * sizeof(char) );
+									char *wbsattributeValueDup = NULL;
+									wbsattributeValueDup = (char *) MEM_alloc( 5000 * sizeof(char) );
+									int i,j,x = 0;
+									int *vcattr = 0;
+									
+									ITK_CALL(ITEM_ask_item_of_rev(VehRev_tag,&VehMstrTag));
+									ITK_CALL(ICS_ask_classification_object(VehMstrTag,&IcsClsTag));
+                                    ITK_CALL(ICS_ico_ask_attributes_optimized(IcsClsTag,&theAttributeCount,&theAttributeIds,&theAttributeNames,&theAttributeValCounts,&theAttributeValues,&theAttributeOptimizedUnits));
+									if(theAttributeCount > 0)
+									{
+										for(i = 0; i < theAttributeCount; i++)
+										{
+											sprintf(attrId,"%d",theAttributeIds[i]);
+											if(tc_strcmp(theAttributeNames[i],"PRODUCT LINE")==0)
+											{
+												tc_strcpy(prodattributeValueDup,"");
+												for(x=0; x<theAttributeValCounts[i]; x++)
+												{
+													tc_strcat(prodattributeValueDup,theAttributeValues[i][x]);
+												}
+											}
+											
+											if(tc_strcmp(theAttributeNames[i],"PLATFORM")==0)
+											{
+												tc_strcpy(platattributeValueDup,"");
+												for(x = 0; x <theAttributeValCounts[i]; x++)
+												{
+													tc_strcat(platattributeValueDup,theAttributeValues[i][x]);
+												}
+											}
+											
+											if(tc_strcmp(theAttributeNames[i],"SEGMENT")==0)
+											{
+												tc_strcpy(segattributeValueDup,"");
+												for(x=0; x<theAttributeValCounts[i]; x++)
+												{
+													tc_strcat(segattributeValueDup,theAttributeValues[i][x]);
+												}
+											}
+											
+											if(tc_strcmp(theAttributeNames[i],"VARIANT")==0)
+											{
+												tc_strcpy(varattributeValueDup,"");
+												for(x=0; x<theAttributeValCounts[i]; x++)
+												{
+													tc_strcat(varattributeValueDup,theAttributeValues[i][x]);
+												}
+											}
+											if(tc_strcmp(theAttributeNames[i],"WBS")==0)
+											{
+												tc_strcpy(wbsattributeValueDup,"");
+												for(x=0; x<theAttributeValCounts[i]; x++)
+												{
+													tc_strcat(wbsattributeValueDup,theAttributeValues[i][x]);
+												}
+											}
+											
+											printf("\t Attribute Name: [%s] - Attribute ID: [%s]\n", theAttributeNames[i], attrId);
+											MEM_free(theAttributeNames[i]);
+											MEM_free(theAttributeValues[i]);
+										}
+										MEM_free(theAttributeNames);
+										MEM_free(theAttributeValues);
+									}
+									printf("\t !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");fflush(stdout);
+									printf("\t [PRODUCT LINE]: [%s] \n", prodattributeValueDup);fflush(stdout);
+									printf("\t [PLATFORM]: [%s] \n", platattributeValueDup);fflush(stdout);
+									printf("\t [SEGMENT]: [%s] \n", segattributeValueDup);fflush(stdout);
+                                    printf("\t [VARIANT]: [%s] \n", varattributeValueDup);	fflush(stdout);
+									 printf("\t [WBS]: [%s] \n", wbsattributeValueDup);	fflush(stdout);
+                                    printf("\t !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");fflush(stdout);									
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	printf("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");fflush(stdout);
+	printf("\n ~~~~~~~~~~~~ L I V E      L O N G      &     P R O S P E R ~~~~~~~~~~~~~\n");fflush(stdout);
+	
+    CLEANUP:
+	ITK_exit_module(TRUE);
+	return ITK_ok;
+}
+
+
+/***************************************************************************
+*
+* // ./compile tm_classification_attr_print.c
+* // ./linkitk -o tm_classification_attr_print tm_classification_attr_print.o
+* // scp cvprod@172.22.99.106:/user/cvprod/sourav/Classification_Attribute_Print/tm_classification_attr_print .
+* // scp cvprod@172.22.99.106:/user/cvprod/sourav/Classification_Attribute_Print/exepatch.sh .
+* // scp cvprod@172.22.99.106:/user/cvprod/sourav/Classification_Attribute_Print/usage.txt .
+* // scp cvprod@172.22.99.106:/user/cvprod/sourav/Classification_Attribute_Print/SendEmail.sh .
+* // ./tm_classification_attr_print -u=loader -pf=/user/uaprodtrl/shells/Admin/loaderpasswdFile.pwf -g=dba -i=52040562000L -j=NR -k=1
+* // ./tm_classification_attr_print -u=loader -pf=/user/cvprod/shells/Admin/loaderpasswdFile.pwf -g=dba -i=52040562000L -j=NR -k=1
+*
+***************************************************************************/
