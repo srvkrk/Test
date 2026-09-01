@@ -1,0 +1,54 @@
+___________________________________________________________________________________________________________________________________________
+
+Extension File Location: /home/jsrercdev/workspace
+1. Stop Pool Manager
+2. Bkp of configuration.xml - $TC_ROOT/install
+3. Bkp of tc_profilevars    - $TC_DATA
+4. Move all custom so into one folder into lib - $TC_ROOT/lib
+5. Launch bmide.sh from $TC_ROOT/bmide/client
+   Make changes - save data model - generate software package
+6. Take feature.xml from - $TC_ROOT/bmide/workspace/14000.0.0/TRL001/output/wntx64/packaging/full_update/trl001_wntx64_1.0_2025_03_07_16-41-25/tem_contributions
+7. Launch tem.sh from $TC_ROOT/install
+8. Configuration Manager
+9. Perform maintainance on an existing configuration
+10. old configuration - infodba08_Configuration
+11. Update Database (Full Model - System downtime required)
+12. enter infodba user id and password
+13. Select Display Name - TMLPRD - Browse - feature.xml from from - $TC_ROOT/bmide/workspace/14000.0.0/TRL001/output/wntx64/packaging/full_update/trl001_wntx64_1.0_2025_03_07_16-41-25/tem_contributions
+                                                                    /home/jsrercdev/workspace/TRL001/output/lnx64/packaging/full_update//trl001_wntx64_1.0_2025_03_07_16-41-25/tem_contributions
+14. Start
+15. After dployment complete Move all custom so from copied location on step 4 to $TC_ROOT/lib
+16. Start Pool Manager
+
+step1 - business_model_extractor  -u=infodba -pf=***** -g=dba -outfile="/user/infodba03/tcdata/model/model.xml"
+step2 - /user/infodba03/Teamcenter12/perl/bin/perl /user/infodba03/Teamcenter12/bin/tc_copy_file.pl /user/infodba03/tcdata/model/model.xml /user/infodba03/Teamcenter12/install/temp/model_backup_preupdate.xml
+step3 - bmide_processtemplates.sh -u=infodba -pf=***** -g=dba -mode=server -dir=/user/infodba03/tcdata/model -templates="trl001" -deployvalidation=yes -update=all -addedtemplates="" -fullUpdate
+step4 - install -regen_schema_file -u=infodba -pf=***** -g=dba
+step5 - install -lock_db -u=infodba -pf=***** -g=dba
+step6 - clearlocks -assert_all_dead -u=infodba -pf=***** -g=dba
+step7 - business_model_updater -u=infodba -pf=***** -g=dba -mode=upgrade -update=all -process=all -file=/user/infodba03/tcdata/model/delta_pre.xml
+step8 - business_model_updater -u -p -g -mode=upgrade -update=schema_revisability_option -process=change -file=/user/infodba08/tcdata/model/delta.xml
+step9 - business_model_updater -u -p -g -mode=upgrade -update=schema -process=add -file=/user/infodba08/tcdata/model/delta.xml
+step10 - business_model_updater -u -p -g -mode=upgrade -update=schema -process=change -file=/user/infodba08/tcdata/model/delta.xml
+step11 - business_model_updater -u -p -g -mode=upgrade -update=main_types -process=add -file=/user/infodba08/tcdata/model/delta.xml
+step12 - business_model_updater -u -p -g -mode=upgrade -update=lovs -process=add -file=/user/infodba08/tcdata/model/delta.xml
+step13 - business_model_updater -u -p -g -mode=upgrade -update=lovs -process=change -file=/user/infodba08/tcdata/model/delta.xml
+step14 - business_model_updater -u -p -g -mode=upgrade -update=non_schema -process=add -file=/user/infodba08/tcdata/model/delta.xml -nolocalization
+step15 - business_model_updater -u -p -g -mode=upgrade -update=bmf_rules_skip_missing_types -process=all -file=/user/infodba08/tcdata/model/delta.xml
+step16 - business_model_updater -u -p -g -mode=upgrade -update=non_schema -process=change -file=/user/infodba08/tcdata/model/delta.xml -nolocalization
+step17 - business_model_updater -u -p -g -mode=upgrade -update=non_schema -process=delete -file=/user/infodba08/tcdata/model/delta.xml -nolocalization
+step18 - business_model_updater -u -p -g -mode=upgrade -update=schema -process=delete -file=/user/infodba08/tcdata/model/delta.xml
+step19 - business_model_updater -u -p -g -mode=upgrade -update=localization -process=all -file=/user/infodba08/tcdata/model/lang/delta_lang.xml
+step20 - install -regen_schema_file -u -p -g
+step21 - install -gen_xmit_file -u -p -g
+step22 - bmide_manage_templates -u -p -g -options=fullupdate -templates="trl001"
+step23 - clearlocks -assert_all_dead -u -p -g
+step24 - install -unlock_db -u -p -g
+
+excute - bmide_modeltool.sh -u -p -g -tool=all -mode=update -target_dir=/user/infodba08/tcdata
+generate_metadata_cache -u -p -g
+generate_client_meta_cache generate all -u -p -g
+install -disable_lock_serialization -u -p -g
+$TC_ROOT/bin/deploy_archive -u -p -g -action=deploy -deploySource=tem -dir=$TC_ROOT/logs/
+_________________________________________________________________________________________
+
